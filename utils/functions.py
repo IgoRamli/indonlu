@@ -444,12 +444,11 @@ def load_model(args):
         elif 'multi_label_classification' == args['task']:
             model_class = AlbertForMultiLabelClassification if 'lite' in args['model_checkpoint'] else BertForMultiLabelClassification
         model = model_class.from_pretrained(args['model_checkpoint'], config=config) 
-    elif 'distiilbert-kepler' in args['model_checkpoint']:
-        # bert-base-multilingual-uncased or bert-base-multilingual-cased
+    elif 'distiilbert' in args['model_checkpoint']:
         # Prepare config & tokenizer
         vocab_path, config_path = None, None
-        tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
-        config = DistilBertConfig.from_pretrained('distilbert-base-uncased')
+        tokenizer = DistilBertTokenizer.from_pretrained(args['model_checkpoint'])
+        config = DistilBertConfig.from_pretrained(args['model_checkpoint'])
         if type(args['num_labels']) == list:
             config.num_labels = max(args['num_labels'])
             config.num_labels_list = args['num_labels']
