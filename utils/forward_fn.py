@@ -133,7 +133,10 @@ def forward_sequence_multi_classification(model, batch_data, i2w, is_test=False,
 # Forward function for sequence classification
 def distilbert_forward_sequence_classification(model, batch_data, i2w, is_test=False, device='cpu', **kwargs):
     # Unpack batch data
-    (subword_batch, mask_batch, label_batch) = batch_data
+    if len(batch_data) == 3:
+        (subword_batch, mask_batch, label_batch) = batch_data
+    elif len(batch_data) == 4:
+        (subword_batch, mask_batch, _, label_batch) = batch_data
     
     # Prepare input & label
     subword_batch = torch.LongTensor(subword_batch)
@@ -162,7 +165,10 @@ def distilbert_forward_sequence_classification(model, batch_data, i2w, is_test=F
 # Forward function for word classification
 def distilbert_forward_word_classification(model, batch_data, i2w, is_test=False, device='cpu', **kwargs):
     # Unpack batch data
-    (subword_batch, mask_batch, subword_to_word_indices_batch, label_batch) = batch_data
+    if len(batch_data) == 4:
+        (subword_batch, mask_batch, subword_to_word_indices_batch, label_batch) = batch_data
+    elif len(batch_data) == 5:
+        (subword_batch, mask_batch, _, subword_to_word_indices_batch, label_batch) = batch_data
     
     # Prepare input & label
     subword_batch = torch.LongTensor(subword_batch)
@@ -201,7 +207,10 @@ def distilbert_forward_word_classification(model, batch_data, i2w, is_test=False
 # Forward function for sequence multilabel classification
 def distilbert_forward_sequence_multi_classification(model, batch_data, i2w, is_test=False, device='cpu', **kwargs):
     # Unpack batch data
-    (subword_batch, mask_batch, label_batch) = batch_data
+    if len(batch_data) == 3:
+        (subword_batch, mask_batch, label_batch) = batch_data
+    elif len(batch_data) == 4:
+        (subword_batch, mask_batch, _, label_batch) = batch_data
     
     # Prepare input & label
     subword_batch = torch.LongTensor(subword_batch)

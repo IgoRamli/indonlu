@@ -354,7 +354,8 @@ class DistilBertForWordClassification(DistilBertPreTrainedModel):
         self.num_labels = config.num_labels
 
         self.distilbert = DistilBertModel(config)
-        self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        self.dropout = nn.Dropout(config.dropout)
+        self.pre_classifier = nn.Linear(config.dim, config.dim)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
 
         self.init_weights()
@@ -397,11 +398,14 @@ class DistilBertForWordClassification(DistilBertPreTrainedModel):
         outputs = self.distilbert(
             input_ids,
             attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
             head_mask=head_mask,
             inputs_embeds=inputs_embeds,
         )
+
+        hidden_state = outputs[0]
+        pooled_output = hidden_state[:, 0]  # (bs, dim)
+        pooled_output = self.pre_classifier(pooled_output)  # (bs, dim)
+        pooled_output = nn.ReLU()(pooled_output)  # (bs, dim)
 
         sequence_output = outputs[0]
 
