@@ -11,7 +11,7 @@ from utils.data_utils import AspectBasedSentimentAnalysisAiryDataset, AspectBase
 
 from utils.functions import WordSplitTokenizer
 from utils.metrics import emotion_detection_metrics_fn, aspect_extraction_metrics_fn, ner_metrics_fn, pos_tag_metrics_fn, entailment_metrics_fn, document_sentiment_metrics_fn, keyword_extraction_metrics_fn, news_categorization_metrics_fn, qa_factoid_metrics_fn, absa_metrics_fn
-from utils.forward_fn import forward_sequence_classification, forward_word_classification, forward_sequence_multi_classification
+from utils.forward_fn import forward_sequence_classification, forward_word_classification, forward_sequence_multi_classification, distilbert_forward_sequence_classification, distilbert_forward_word_classification, distilbert_forward_sequence_multi_classification
 
 from nltk.tokenize import TweetTokenizer
 from argparse import ArgumentParser
@@ -79,14 +79,22 @@ def get_eval_parser():
     print_opts(args)
     return args
 
+def get_forward_fn(args):
+    if 'distilbert' in args['model_checkpoint']:
+        return distilbert_forward_sequence_classification, distilbert_forward_word_classification, distilbert_forward_sequence_multi_classification
+    else:
+        return forward_sequence_classification, forward_word_classification, forward_sequence_multi_classification
+
 #TODO: Need to change it into a json or something else that are easily extendable
-def append_dataset_args(args):    
+def append_dataset_args(args):
+    fwd_sequence_classification, fwd_word_classification, fwd_sequence_multi_classification = get_forward_fn(args)
+
     if args['dataset'] == "emotion-twitter":
         args['task'] = 'sequence_classification'
         args['num_labels'] = EmotionDetectionDataset.NUM_LABELS
         args['dataset_class'] = EmotionDetectionDataset
         args['dataloader_class'] = EmotionDetectionDataLoader
-        args['forward_fn'] = forward_sequence_classification
+        args['forward_fn'] = fwd_sequence_classification
         args['metrics_fn'] = emotion_detection_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/emot_emotion-twitter/train_preprocess.csv'
@@ -104,7 +112,7 @@ def append_dataset_args(args):
         args['num_labels'] = AspectBasedSentimentAnalysisAiryDataset.NUM_LABELS
         args['dataset_class'] = AspectBasedSentimentAnalysisAiryDataset
         args['dataloader_class'] = AspectBasedSentimentAnalysisDataLoader
-        args['forward_fn'] = forward_sequence_multi_classification
+        args['forward_fn'] = fwd_sequence_multi_classification
         args['metrics_fn'] = absa_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/hoasa_absa-airy/train_preprocess.csv'
@@ -122,7 +130,7 @@ def append_dataset_args(args):
         args['num_labels'] = AspectExtractionDataset.NUM_LABELS
         args['dataset_class'] = AspectExtractionDataset
         args['dataloader_class'] = AspectExtractionDataLoader
-        args['forward_fn'] = forward_word_classification
+        args['forward_fn'] = fwd_word_classification
         args['metrics_fn'] = aspect_extraction_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/terma_term-extraction-airy/train_preprocess.txt'
@@ -140,7 +148,7 @@ def append_dataset_args(args):
         args['num_labels'] = NerGritDataset.NUM_LABELS
         args['dataset_class'] = NerGritDataset
         args['dataloader_class'] = NerDataLoader
-        args['forward_fn'] = forward_word_classification
+        args['forward_fn'] = fwd_word_classification
         args['metrics_fn'] = ner_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/nergrit_ner-grit/train_preprocess.txt'
@@ -158,7 +166,7 @@ def append_dataset_args(args):
         args['num_labels'] = PosTagIdnDataset.NUM_LABELS
         args['dataset_class'] = PosTagIdnDataset
         args['dataloader_class'] = PosTagDataLoader
-        args['forward_fn'] = forward_word_classification
+        args['forward_fn'] = fwd_word_classification
         args['metrics_fn'] = pos_tag_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/bapos_pos-idn/train_preprocess.txt'
@@ -176,7 +184,7 @@ def append_dataset_args(args):
         args['num_labels'] = EntailmentDataset.NUM_LABELS
         args['dataset_class'] = EntailmentDataset
         args['dataloader_class'] = EntailmentDataLoader
-        args['forward_fn'] = forward_sequence_classification
+        args['forward_fn'] = fwd_sequence_classification
         args['metrics_fn'] = entailment_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/wrete_entailment-ui/train_preprocess.csv'
@@ -194,7 +202,7 @@ def append_dataset_args(args):
         args['num_labels'] = DocumentSentimentDataset.NUM_LABELS
         args['dataset_class'] = DocumentSentimentDataset
         args['dataloader_class'] = DocumentSentimentDataLoader
-        args['forward_fn'] = forward_sequence_classification
+        args['forward_fn'] = fwd_sequence_classification
         args['metrics_fn'] = document_sentiment_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/smsa_doc-sentiment-prosa/train_preprocess.tsv'
@@ -212,7 +220,7 @@ def append_dataset_args(args):
         args['num_labels'] = KeywordExtractionDataset.NUM_LABELS
         args['dataset_class'] = KeywordExtractionDataset
         args['dataloader_class'] = KeywordExtractionDataLoader
-        args['forward_fn'] = forward_word_classification
+        args['forward_fn'] = fwd_word_classification
         args['metrics_fn'] = keyword_extraction_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/keps_keyword-extraction-prosa/train_preprocess.txt'
@@ -230,7 +238,7 @@ def append_dataset_args(args):
         args['num_labels'] = QAFactoidDataset.NUM_LABELS
         args['dataset_class'] = QAFactoidDataset
         args['dataloader_class'] = QAFactoidDataLoader
-        args['forward_fn'] = forward_word_classification
+        args['forward_fn'] = fwd_word_classification
         args['metrics_fn'] = qa_factoid_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/facqa_qa-factoid-itb/train_preprocess.csv'
@@ -248,7 +256,7 @@ def append_dataset_args(args):
         args['num_labels'] = NerProsaDataset.NUM_LABELS
         args['dataset_class'] = NerProsaDataset
         args['dataloader_class'] = NerDataLoader
-        args['forward_fn'] = forward_word_classification
+        args['forward_fn'] = fwd_word_classification
         args['metrics_fn'] = ner_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/nerp_ner-prosa/train_preprocess.txt'
@@ -266,7 +274,7 @@ def append_dataset_args(args):
         args['num_labels'] = PosTagProsaDataset.NUM_LABELS
         args['dataset_class'] = PosTagProsaDataset
         args['dataloader_class'] = PosTagDataLoader
-        args['forward_fn'] = forward_word_classification
+        args['forward_fn'] = fwd_word_classification
         args['metrics_fn'] = pos_tag_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/posp_pos-prosa/train_preprocess.txt'
@@ -284,7 +292,7 @@ def append_dataset_args(args):
         args['num_labels'] = AspectBasedSentimentAnalysisProsaDataset.NUM_LABELS
         args['dataset_class'] = AspectBasedSentimentAnalysisProsaDataset
         args['dataloader_class'] = AspectBasedSentimentAnalysisDataLoader
-        args['forward_fn'] = forward_sequence_multi_classification
+        args['forward_fn'] = fwd_sequence_multi_classification
         args['metrics_fn'] = absa_metrics_fn
         args['valid_criterion'] = 'F1'
         args['train_set_path'] = './dataset/casa_absa-prosa/train_preprocess.csv'

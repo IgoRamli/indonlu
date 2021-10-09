@@ -444,7 +444,7 @@ def load_model(args):
         elif 'multi_label_classification' == args['task']:
             model_class = AlbertForMultiLabelClassification if 'lite' in args['model_checkpoint'] else BertForMultiLabelClassification
         model = model_class.from_pretrained(args['model_checkpoint'], config=config) 
-    elif 'distiilbert' in args['model_checkpoint']:
+    elif 'distilbert' in args['model_checkpoint']:
         # Prepare config & tokenizer
         vocab_path, config_path = None, None
         tokenizer = DistilBertTokenizer.from_pretrained(args['model_checkpoint'])
