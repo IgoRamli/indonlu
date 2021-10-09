@@ -3,8 +3,21 @@ from transformers import AlbertConfig, AlbertTokenizer, AlbertForSequenceClassif
 from transformers import BertConfig, BertTokenizer, BertForSequenceClassification, BertForPreTraining, BertModel
 from transformers import XLMConfig, XLMTokenizer, XLMForSequenceClassification, XLMForTokenClassification, XLMModel
 from transformers import XLMRobertaConfig, XLMRobertaTokenizer, XLMRobertaForSequenceClassification, XLMRobertaModel
-from modules.word_classification import AlbertForWordClassification, BertForWordClassification, XLMForWordClassification, XLMRobertaForWordClassification
-from modules.multi_label_classification import AlbertForMultiLabelClassification, BertForMultiLabelClassification, XLMForMultiLabelClassification, XLMRobertaForMultiLabelClassification
+from transformers import DistilBertConfig, DistilBertTokenizer, DistilBertForSequenceClassification, DistilBertModel
+from modules.word_classification import (
+    AlbertForWordClassification,
+    BertForWordClassification,
+    XLMForWordClassification,
+    XLMRobertaForWordClassification,
+    DistilBertForWordClassification,
+)
+from modules.multi_label_classification import (
+    AlbertForMultiLabelClassification,
+    BertForMultiLabelClassification,
+    XLMForMultiLabelClassification,
+    XLMRobertaForMultiLabelClassification,
+    DistilBertForMultiLabelClassification,
+)
 import json
 import numpy as np
 import torch
@@ -167,6 +180,14 @@ def get_model_class(model_type, task):
             pred_cls = XLMRobertaForWordClassification
         elif 'multi_label_classification' == task:
             pred_cls = XLMRobertaForMultiLabelClassification
+    elif 'distilbert' in model_type:
+        base_cls = DistilBertModel
+        if 'sequence_classification' == task:
+            pred_cls = DistilBertForSequenceClassification
+        elif 'token_classification' == task:
+            pred_cls = DistilBertForWordClassification
+        elif 'multi_label_classification' == task:
+            pred_cls = DistilBertForMultiLabelClassification
     else: # 'babert', 'bert-base-multilingual', 'word2vec', 'fasttext', 'scratch'
         base_cls = BertModel
         if 'sequence_classification' == task:
@@ -252,6 +273,9 @@ def load_eval_model(args):
     elif 'xlm-roberta' in args['model_type']:
         config = XLMRobertaConfig.from_pretrained(args['model_type'])
         tokenizer = XLMRobertaTokenizer.from_pretrained(args['model_type'])
+    elif 'distilbert' in args['model_type']:
+        config = DistilBertConfig.from_pretrained('distilbert-base-uncased')
+        tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
     else:
         raise ValueError('Invalid `model_type` argument values')
     
@@ -278,6 +302,8 @@ def load_eval_model(args):
         model.roberta = base_model
     elif 'transformer' in model.__dir__():
         model.transformer = base_model
+    elif 'distilbert' in model.__dir__():
+        model.distilbert = base_model
     else:
         ValueError('Model attribute not found, is there any change in the `transformers` library?')    
                                                         
@@ -418,4 +444,23 @@ def load_model(args):
         elif 'multi_label_classification' == args['task']:
             model_class = AlbertForMultiLabelClassification if 'lite' in args['model_checkpoint'] else BertForMultiLabelClassification
         model = model_class.from_pretrained(args['model_checkpoint'], config=config) 
+    elif 'distiilbert-kepler' in args['model_checkpoint']:
+        # bert-base-multilingual-uncased or bert-base-multilingual-cased
+        # Prepare config & tokenizer
+        vocab_path, config_path = None, None
+        tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+        config = DistilBertConfig.from_pretrained('distilbert-base-uncased')
+        if type(args['num_labels']) == list:
+            config.num_labels = max(args['num_labels'])
+            config.num_labels_list = args['num_labels']
+        else:
+            config.num_labels = args['num_labels']
+        
+        # Instantiate model
+        if 'sequence_classification' == args['task']:
+            model = DistilBertForSequenceClassification.from_pretrained(args['model_checkpoint'], config=config)
+        elif 'token_classification' == args['task']:
+            model = DistilBertForWordClassification.from_pretrained(args['model_checkpoint'], config=config)
+        elif 'multi_label_classification' == args['task']:
+            model = DistilBertForMultiLabelClassification.from_pretrained(args['model_checkpoint'], config=config)
     return model, tokenizer, vocab_path, config_path

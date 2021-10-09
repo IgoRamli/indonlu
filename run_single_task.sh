@@ -46,3 +46,6 @@ CUDA_VISIBLE_DEVICES=$1 python3 main.py --n_epochs 1 --train_batch_size $4 --mod
 
 # indobert-lite-large-p2
 CUDA_VISIBLE_DEVICES=$1 python3 main.py --n_epochs 1 --train_batch_size $4 --model_checkpoint indobenchmark/indobert-lite-large-p2 --step_size 1 --gamma 0.9 --experiment_name indobert-lite-large-p2-uncased_b$4_step1_gamma0.9_lr1e-5_early$3_layer24_lowerTrue --lr 1e-5 --early_stop $3 --dataset $2 --lower --num_layers 24 --force
+
+# distilbert
+CUDA_VISIBLE_DEVICES=$1 python3 main.py --n_epochs 1 --train_batch_size $4 --model_checkpoint cahya/distilbert-base-indonesian --step_size 1 --gamma 0.9 --experiment_name distilbert-base-p2-uncased_b$4_step1_gamma0.9_lr1e-5_early$3_layer24_lowerTrue --lr 1e-5 --early_stop $3 --dataset $2 --lower --num_layers 24 --force
