@@ -33,7 +33,7 @@ def print_opts(opts):
 def get_parser():
     parser = ArgumentParser()
     parser.add_argument("--experiment_name", type=str, default="exp", help="Experiment name")
-    parser.add_argument("--model_dir", type=str, default="save/", help="Model directory")
+    parser.add_argument("--model_dir", type=str, default="save", help="Model directory")
     parser.add_argument("--dataset", type=str, default='emotion-twitter', help="Choose between emotion-twitter, absa-airy, term-extraction-airy, ner-grit, pos-idn, entailment-ui, doc-sentiment-prosa, keyword-extraction-prosa, qa-factoid-itb, news-category-prosa, ner-prosa, pos-prosa")
     parser.add_argument("--model_checkpoint", type=str, default="bert-base-multilingual-uncased", help="Path, url or short name of the model")
     parser.add_argument("--max_seq_len", type=int, default=512, help="Max number of tokens")
